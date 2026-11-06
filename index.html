@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Oche Master: Career Tour</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#010409" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --accent: #e5a93c;
+      --danger: #da3633;
+      --success: #238636;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 50px; user-select: none; }
+    header { background: #010409; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    header h1 { font-size: 1.1rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; font-weight: 800; }
+    .status-badge { background: #21262d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--border); color: #c9d1d9; font-weight: 600; }
+
+    .nav-tabs { display: flex; background: #090d13; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .nav-tabs button { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px 6px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.8rem; white-space: nowrap; }
+    .nav-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .container { max-width: 600px; margin: 12px auto; padding: 0 12px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+    h2 { font-size: 1.1rem; margin-bottom: 8px; color: var(--accent); }
+
+    /* Match Screen */
+    .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 12px; }
+    .score-box { background: #0d1117; padding: 12px; border-radius: 6px; border: 2px solid var(--border); position: relative; }
+    .score-box.active-turn { border-color: var(--accent); }
+    .score-box.active-turn::after { content: "THROWING"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-size: 0.6rem; font-weight: 900; padding: 1px 6px; border-radius: 4px; }
+    .score-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+    .big-score { font-size: 2.8rem; font-weight: 900; line-height: 1.1; margin: 4px 0; }
+    .legs-sets { font-size: 0.8rem; color: var(--text-muted); }
+    .sub-stat { font-size: 0.7rem; color: #58a6ff; margin-top: 4px; }
+
+    .visit-display { background: #010409; border: 1px solid var(--border); border-radius: 6px; padding: 8px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
+    .dart-pill { background: #21262d; border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-weight: bold; min-width: 48px; text-align: center; font-size: 0.95rem; }
+
+    .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
+    .btn-key { background: #21262d; border: 1px solid var(--border); color: #fff; padding: 12px 0; border-radius: 4px; font-size: 1.05rem; font-weight: 700; text-align: center; cursor: pointer; }
+    .btn-key:active { background: #388bfd; }
+    .btn-mult { background: #1f6feb; border-color: #388bfd; font-size: 0.85rem; }
+    .btn-mult.selected { background: var(--accent); color: #000; border-color: #f3be5d; }
+    .btn-action { background: var(--success); border: 1px solid #2ea043; color: white; padding: 14px; font-size: 1rem; font-weight: 800; border-radius: 6px; cursor: pointer; text-align: center; }
+    .btn-action:active { opacity: 0.8; }
+
+    /* Tables & Lists */
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; }
+    tr.is-user { background: rgba(229, 169, 60, 0.15); font-weight: bold; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+    .tag-tourcard { background: #1f6feb; color: white; }
+    .tag-danger { background: var(--danger); color: white; }
+
+    .sponsor-card { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+    .sponsor-card.signed { border-color: var(--success); }
+
+    /* Wildcard Modal */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .modal-card { background: #161b22; border: 2px solid var(--accent); border-radius: 8px; padding: 20px; max-width: 450px; width: 100%; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Oche Master</h1>
+  <div class="status-badge" id="player-badge">Rank: #128 | Bank: £150</div>
+</header>
+
+<div class="nav-tabs">
+  <button class="active" onclick="switchTab('tab-match')">Matchplay</button>
+  <button onclick="switchTab('tab-calendar')">Tour</button>
+  <button onclick="switchTab('tab-oom')">Order of Merit</button>
+  <button onclick="switchTab('tab-sponsors')">Sponsors</button>
+</div>
+
+<div class="container">
+
+  <!-- MATCH TAB -->
+  <div id="tab-match" class="tab-content active">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h2 id="match-header" style="margin: 0; font-size: 1rem;">Anchor & Crown Superleague</h2>
+        <span id="match-format" style="font-size: 0.75rem; color: var(--text-muted);">First to 3</span>
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-box active-turn" id="user-score-box">
+          <div class="score-title">You</div>
+          <div class="big-score" id="user-rem">501</div>
+          <div class="legs-sets">Legs: <span id="user-legs">0</span></div>
+          <div class="sub-stat">Match Avg: <span id="user-match-avg">0.0</span></div>
+        </div>
+        <div class="score-box" id="bot-score-box">
+          <div class="score-title" id="bot-name-label">Bot</div>
+          <div class="big-score" id="bot-rem">501</div>
+          <div class="legs-sets">Legs: <span id="bot-legs">0</span></div>
+          <div class="sub-stat">Match Avg: <span id="bot-match-avg">0.0</span></div>
+        </div>
+      </div>
+
+      <div class="visit-display">
+        <div class="dart-pill" id="d1-pill">-</div>
+        <div class="dart-pill" id="d2-pill">-</div>
+        <div class="dart-pill" id="d3-pill">-</div>
+        <div style="font-weight: 800; font-size: 1rem; color: var(--accent);">
+          Score: <span id="visit-total-disp">0</span>
+        </div>
+      </div>
+
+      <!-- Multiplier row -->
+      <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+        <button class="btn-key btn-mult selected" id="mult-1" onclick="setMultiplier(1)">Single</button>
+        <button class="btn-key btn-mult" id="mult-2" onclick="setMultiplier(2)">Double</button>
+        <button class="btn-key btn-mult" id="mult-3" onclick="setMultiplier(3)">Treble</button>
+        <button class="btn-key" style="flex: 1;" onclick="tapSegment(25)">Bull</button>
+        <button class="btn-key" style="flex: 1; background: #3b1f23;" onclick="tapSegment(0)">Miss</button>
+      </div>
+
+      <!-- Dartboard Keys -->
+      <div class="board-grid">
+        <button class="btn-key" onclick="tapSegment(20)">20</button>
+        <button class="btn-key" onclick="tapSegment(19)">19</button>
+        <button class="btn-key" onclick="tapSegment(18)">18</button>
+        <button class="btn-key" onclick="tapSegment(17)">17</button>
+        <button class="btn-key" onclick="tapSegment(16)">16</button>
+        <button class="btn-key" onclick="tapSegment(15)">15</button>
+        <button class="btn-key" onclick="tapSegment(14)">14</button>
+        <button class="btn-key" onclick="tapSegment(13)">13</button>
+        <button class="btn-key" onclick="tapSegment(12)">12</button>
+        <button class="btn-key" onclick="tapSegment(11)">11</button>
+        <button class="btn-key" onclick="tapSegment(10)">10</button>
+        <button class="btn-key" onclick="tapSegment(9)">9</button>
+        <button class="btn-key" onclick="tapSegment(8)">8</button>
+        <button class="btn-key" onclick="tapSegment(7)">7</button>
+        <button class="btn-key" onclick="tapSegment(6)">6</button>
+        <button class="btn-key" onclick="tapSegment(5)">5</button>
+        <button class="btn-key" onclick="tapSegment(4)">4</button>
+        <button class="btn-key" onclick="tapSegment(3)">3</button>
+        <button class="btn-key" onclick="tapSegment(2)">2</button>
+        <button class="btn-key" onclick="tapSegment(1)">1</button>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-key" style="flex: 1; background: #30363d;" onclick="clearVisit()">Clear</button>
+        <button class="btn-action" style="flex: 2;" onclick="submitVisit()">Confirm Visit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content">
+    <div class="card">
+      <h2>PDC Tour Circuit</h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+        Season <span id="season-num">1</span>, Event <span id="event-num">1</span> of 10. Rolling Avg: <strong id="career-avg-disp" style="color:var(--accent);">64.0</strong>
+      </p>
+      <div id="calendar-list"></div>
+    </div>
+  </div>
+
+  <!-- ORDER OF MERIT TAB -->
+  <div id="tab-oom" class="tab-content">
+    <div class="card">
+      <h2>2-Year Rolling Order of Merit</h2>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Top 64 players secure an automatic PDC Tour Card.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Status</th>
+            <th>Earnings</th>
+          </tr>
+        </thead>
+        <tbody id="oom-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SPONSORS TAB -->
+  <div id="tab-sponsors" class="tab-content">
+    <div class="card">
+      <h2>Sponsorship Contracts</h2>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">Weekly retainers and bonuses scale based on tour rank tier.</p>
+      <div id="sponsors-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WILDCARD MODAL -->
+<div class="modal-backdrop" id="wildcard-modal">
+  <div class="modal-card">
+    <h2 id="modal-title" style="color:var(--accent); font-size:1.2rem; margin-bottom: 8px;">Reserve Wildcard Invite!</h2>
+    <p id="modal-text" style="font-size:0.85rem; line-height:1.4; margin-bottom: 16px; color:#c9d1d9;">You have earned an invitation to step up to a higher tier event.</p>
+    <button class="btn-action" style="width: 100%; margin-bottom: 8px;" onclick="acceptWildcard()">Accept & Play</button>
+    <button class="btn-key" style="width: 100%; background: #30363d;" onclick="closeWildcard()">Decline</button>
+  </div>
+</div>
+
+<script>
+// -------------------------------------------------------------
+// 1. DATA AND STATE (WITH LOCALSTORAGE AUTO-SAVE)
+// -------------------------------------------------------------
+const STORAGE_KEY = "oche_master_saved_game";
+
+const TOURNAMENTS = [
+  { id: 't1', name: 'Anchor & Crown Superleague', tier: 1, legs: 3, prize: 350 },
+  { id: 't2', name: 'Black Dog District Open', tier: 1, legs: 3, prize: 500 },
+  { id: 't3', name: 'Wiltshire County Trophy', tier: 2, legs: 4, prize: 1800 },
+  { id: 't4', name: 'West of England Masters', tier: 2, legs: 4, prize: 3000 },
+  { id: 't5', name: 'PDC Q-School Stage 1', tier: 3, legs: 5, prize: 4500 },
+  { id: 't6', name: 'PDC Challenge Tour', tier: 3, legs: 5, prize: 8000 },
+  { id: 't7', name: 'Players Championship (Floor)', tier: 4, legs: 6, prize: 15000 },
+  { id: 't8', name: 'European Tour Stage', tier: 4, legs: 6, prize: 35000 },
+  { id: 't9', name: 'PDC World Matchplay', tier: 5, legs: 8, prize: 150000 },
+  { id: 't10', name: 'PDC World Championship (Ally Pally)', tier: 5, legs: 9, prize: 500000 },
+];
+
+const SPONSORS = [
+  { id: 'sp1', name: 'The Village Chippy', tier: 1, weekly: 25, bonus180: 5, titleBonus: 100, reqRank: 128 },
+  { id: 'sp2', name: 'Local Tyres & MOT', tier: 1, weekly: 60, bonus180: 10, titleBonus: 250, reqRank: 115 },
+  { id: 'sp3', name: 'Avon Valley Transport', tier: 2, weekly: 180, bonus180: 30, titleBonus: 800, reqRank: 90 },
+  { id: 'sp4', name: 'Apex Tungsten Barrels', tier: 3, weekly: 500, bonus180: 80, titleBonus: 2500, reqRank: 64 },
+  { id: 'sp5', name: 'Target Aero-Grip Flights', tier: 4, weekly: 1500, bonus180: 250, titleBonus: 10000, reqRank: 32 },
+  { id: 'sp6', name: 'Red Bull Stage Energy', tier: 5, weekly: 5000, bonus180: 750, titleBonus: 40000, reqRank: 16 }
+];
+
+let gameState = {
+  bankBalance: 150,
+  season: 1,
+  eventIndex: 0,
+  recentAvgs: [62.4, 65.1, 63.8, 66.2],
+  signedSponsors: ['sp1'],
+  earningsLog: [] // { prize, seasonEarned, expiresSeason }
+};
+
+let botRoster = [];
+let pendingWildcard = null;
+
+function saveGame() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ gameState, botRoster }));
+  } catch (e) { console.error("Could not save:", e); }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.gameState) gameState = data.gameState;
+    if (data.botRoster) botRoster = data.botRoster;
+    return true;
+  } catch (e) { return false; }
+}
+
+function initBots() {
+  const stars = ["Luke The Nuke", "Mighty Mike", "The Iceman", "Snakebite", "Bully Boy", "Voltage", "The Asp", "The Ferret", "Chizzy", "Rockstar"];
+  botRoster = [];
+  for (let i = 1; i <= 128; i++) {
+    botRoster.push({
+      id: i,
+      name: i <= stars.length ? stars[i - 1] : `PDC Pro #${i}`,
+      earnings: Math.round(480000 / (1 + (i * 0.14)))
+    });
+  }
+}
+
+// -------------------------------------------------------------
+// 2. CALLER AUDIO ENGINE (WEB SPEECH)
+// -------------------------------------------------------------
+function callReferee(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB';
+  u.pitch = 0.9;
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
+
+// -------------------------------------------------------------
+// 3. DYNAMIC BOT SIMULATION
+// -------------------------------------------------------------
+function getRollingAvg() {
+  if (gameState.recentAvgs.length === 0) return 64.0;
+  return gameState.recentAvgs.reduce((a, b) => a + b, 0) / gameState.recentAvgs.length;
+}
+
+function getBotSigma(tier) {
+  const userAvg = getRollingAvg();
+  const offsets = { 1: -9, 2: -3, 3: 1, 4: 5, 5: 9 };
+  const targetAvg = userAvg + (offsets[tier] || 0) + ((Math.random() * 4) - 2);
+  const sigma = 45 - (targetAvg - 45) * 0.55;
+  return Math.max(8, Math.min(36, sigma));
+}
+
+function simBotDart(targetScore, targetMult, sigma) {
+  const u1 = Math.random(), u2 = Math.random();
+  const dev = Math.abs(Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2) * sigma);
+  if (dev <= 4.5) return { score: targetScore, mult: targetMult };
+  if (dev <= 16.0) return { score: targetScore, mult: 1 };
+  return { score: Math.max(1, Math.min(20, targetScore + (Math.random() > 0.5 ? 1 : -1))), mult: 1 };
+}
+
+// -------------------------------------------------------------
+// 4. MATCH LOGIC
+// -------------------------------------------------------------
+let matchState = {
+  tourn: TOURNAMENTS[0],
+  legsToWin: 3,
+  userLegs: 0,
+  botLegs: 0,
+  userScore: 501,
+  botScore: 501,
+  turn: 'user',
+  currentVisit: [],
+  multiplier: 1,
+  userDarts: 0,
+  userPoints: 0,
+  botDarts: 0,
+  botPoints: 0
+};
+
+function startMatch(tourn) {
+  matchState.tourn = tourn;
+  matchState.legsToWin = tourn.legs;
+  matchState.userLegs = 0;
+  matchState.botLegs = 0;
+  matchState.userScore = 501;
+  matchState.botScore = 501;
+  matchState.userDarts = 0;
+  matchState.userPoints = 0;
+  matchState.botDarts = 0;
+  matchState.botPoints = 0;
+  matchState.currentVisit = [];
+  matchState.multiplier = 1;
+  matchState.turn = 'user';
+
+  document.getElementById("match-header").innerText = tourn.name;
+  document.getElementById("match-format").innerText = `First to ${tourn.legs} (Tier ${tourn.tier})`;
+  document.getElementById("bot-name-label").innerText = `Tier ${tourn.tier} Opponent`;
+  switchTab('tab-match');
+  updateMatchUI();
+  callReferee("Game on!");
+}
+
+function setMultiplier(m) {
+  matchState.multiplier = m;
+  [1, 2, 3].forEach(val => {
+    document.getElementById(`mult-${val}`).classList.toggle("selected", val === m);
+  });
+}
+
+function tapSegment(score) {
+  if (matchState.turn !== 'user' || matchState.currentVisit.length >= 3) return;
+  const mult = score === 25 ? (matchState.multiplier === 2 ? 2 : 1) : matchState.multiplier;
+  matchState.currentVisit.push({ score, mult });
+  setMultiplier(1);
+  updatePills();
+}
+
+function updatePills() {
+  const d = matchState.currentVisit;
+  const fmt = (dart) => {
+    if (!dart) return "-";
+    if (dart.score === 0) return "0";
+    if (dart.score === 25) return dart.mult === 2 ? "BULL" : "25";
+    return (dart.mult === 3 ? "T" : dart.mult === 2 ? "D" : "") + dart.score;
+  };
+  document.getElementById("d1-pill").innerText = fmt(d[0]);
+  document.getElementById("d2-pill").innerText = fmt(d[1]);
+  document.getElementById("d3-pill").innerText = fmt(d[2]);
+  document.getElementById("visit-total-disp").innerText = d.reduce((acc, item) => acc + (item.score * item.mult), 0);
+}
+
+function clearVisit() {
+  matchState.currentVisit = [];
+  updatePills();
+}
+
+function submitVisit() {
+  if (matchState.currentVisit.length === 0) return;
+  let rem = matchState.userScore;
+  let validDarts = 0;
+  let bust = false;
+
+  for (let d of matchState.currentVisit) {
+    validDarts++;
+    const pts = d.score * d.mult;
+    if (rem - pts === 0 && d.mult === 2) {
+      rem = 0;
+      break;
+    } else if (rem - pts <= 1) {
+      bust = true;
+      break;
+    } else {
+      rem -= pts;
+    }
+  }
+
+  const scored = matchState.userScore - rem;
+  matchState.userDarts += validDarts;
+  clearVisit();
+
+  if (bust) {
+    callReferee("Bust!");
+    matchState.turn = 'bot';
+    updateMatchUI();
+    setTimeout(executeBotTurn, 800);
+    return;
+  }
+
+  matchState.userPoints += scored;
+  matchState.userScore = rem;
+
+  if (scored === 180) {
+    callReferee("One Hundred and Eighty!");
+    awardBonus('180');
+  } else if (scored === 0) {
+    callReferee("No score.");
+  } else {
+    callReferee(`${scored}`);
+  }
+
+  if (rem === 0) {
+    matchState.userLegs++;
+    callReferee("Game shot, and the leg!");
+    if (matchState.userLegs >= matchState.legsToWin) {
+      concludeMatch('user');
+      return;
+    }
+    matchState.userScore = 501;
+    matchState.botScore = 501;
+    updateMatchUI();
+    return;
+  }
+
+  if (rem <= 40 && rem % 2 === 0) {
+    setTimeout(() => callReferee(`You require Double ${rem / 2}`), 1000);
+  }
+
+  matchState.turn = 'bot';
+  updateMatchUI();
+  setTimeout(executeBotTurn, 900);
+}
+
+function executeBotTurn() {
+  const sigma = getBotSigma(matchState.tourn.tier);
+  let rem = matchState.botScore;
+
+  for (let i = 0; i < 3; i++) {
+    matchState.botDarts++;
+    let target = 20, mult = 3;
+    if (rem <= 40 && rem % 2 === 0) {
+      target = rem / 2;
+      mult = 2;
+    } else if (rem === 50) {
+      target = 25;
+      mult = 2;
+    }
+
+    const hit = simBotDart(target, mult, sigma);
+    const pts = hit.score * hit.mult;
+
+    if (rem - pts === 0 && hit.mult === 2) {
+      rem = 0;
+      break;
+    } else if (rem - pts <= 1) {
+      break;
+    } else {
+      rem -= pts;
+    }
+  }
+
+  matchState.botPoints += (matchState.botScore - rem);
+  matchState.botScore = rem;
+
+  if (rem === 0) {
+    matchState.botLegs++;
+    callReferee("Game shot, to your opponent.");
+    if (matchState.botLegs >= matchState.legsToWin) {
+      concludeMatch('bot');
+      return;
+    }
+    matchState.userScore = 501;
+    matchState.botScore = 501;
+  }
+
+  matchState.turn = 'user';
+  updateMatchUI();
+}
+
+function concludeMatch(winner) {
+  const avg = matchState.userDarts > 0 ? ((matchState.userPoints / matchState.userDarts) * 3).toFixed(1) : 63.0;
+  gameState.recentAvgs.push(parseFloat(avg));
+  if (gameState.recentAvgs.length > 12) gameState.recentAvgs.shift();
+
+  if (winner === 'user') {
+    const prize = matchState.tourn.prize;
+    gameState.bankBalance += prize;
+    awardBonus('title');
+    callReferee("Game, shot, and the match!");
+
+    gameState.earningsLog.push({
+      prize,
+      seasonEarned: gameState.season,
+      expiresSeason: gameState.season + 2
+    });
+
+    alert(`VICTORY! Champion of ${matchState.tourn.name}!\nPrize: £${prize.toLocaleString()}\nMatch Avg: ${avg}`);
+    checkWildcard(matchState.tourn.tier);
+  } else {
+    alert(`Match defeated.\nMatch Average: ${avg}`);
+  }
+
+  advanceCalendar();
+  saveGame();
+  updateOOM();
+  renderSponsors();
+  switchTab('tab-calendar');
+}
+
+function awardBonus(type) {
+  gameState.signedSponsors.forEach(sId => {
+    const sp = SPONSORS.find(s => s.id === sId);
+    if (!sp) return;
+    if (type === '180') gameState.bankBalance += sp.bonus180;
+    if (type === 'title') gameState.bankBalance += sp.titleBonus;
+  });
+}
+
+function updateMatchUI() {
+  document.getElementById("user-rem").innerText = matchState.userScore;
+  document.getElementById("bot-rem").innerText = matchState.botScore;
+  document.getElementById("user-legs").innerText = matchState.userLegs;
+  document.getElementById("bot-legs").innerText = matchState.botLegs;
+
+  const uAvg = matchState.userDarts > 0 ? ((matchState.userPoints / matchState.userDarts) * 3).toFixed(1) : "0.0";
+  const bAvg = matchState.botDarts > 0 ? ((matchState.botPoints / matchState.botDarts) * 3).toFixed(1) : "0.0";
+  document.getElementById("user-match-avg").innerText = uAvg;
+  document.getElementById("bot-match-avg").innerText = bAvg;
+
+  document.getElementById("user-score-box").classList.toggle("active-turn", matchState.turn === 'user');
+  document.getElementById("bot-score-box").classList.toggle("active-turn", matchState.turn === 'bot');
+}
+
+// -------------------------------------------------------------
+// 5. STEPPING STONE WILDCARDS
+// -------------------------------------------------------------
+function checkWildcard(tierWon) {
+  if (tierWon >= 5) return;
+  const nextTier = tierWon + 1;
+  const higherEvent = TOURNAMENTS.find(t => t.tier === nextTier);
+
+  if (higherEvent) {
+    pendingWildcard = higherEvent;
+    document.getElementById("modal-title").innerText = `Tier ${nextTier} Reserve Call-Up!`;
+    document.getElementById("modal-text").innerText = `Following your victory in Tier ${tierWon}, a withdrawal allows you a reserve spot in the ${higherEvent.name}!`;
+    document.getElementById("wildcard-modal").style.display = "flex";
+  }
+}
+
+function acceptWildcard() {
+  const ev = pendingWildcard;
+  closeWildcard();
+  if (ev) startMatch(ev);
+}
+
+function closeWildcard() {
+  pendingWildcard = null;
+  document.getElementById("wildcard-modal").style.display = "none";
+}
+
+// -------------------------------------------------------------
+// 6. CAREER PROGRESSION & 2-YEAR ROLLING OOM
+// -------------------------------------------------------------
+function getRollingEarnings() {
+  gameState.earningsLog = gameState.earningsLog.filter(e => e.expiresSeason > gameState.season);
+  return gameState.earningsLog.reduce((acc, i) => acc + i.prize, 0);
+}
+
+function updateOOM() {
+  const userEarnings = getRollingEarnings();
+  const list = [...botRoster.filter(b => !b.isUser), { id: 9999, name: "Jordan Martin (You)", earnings: userEarnings, isUser: true }];
+  list.sort((a, b) => b.earnings - a.earnings);
+
+  const tbody = document.getElementById("oom-body");
+  tbody.innerHTML = "";
+
+  let userRank = 128;
+  list.slice(0, 68).forEach((p, idx) => {
+    const rank = idx + 1;
+    if (p.isUser) userRank = rank;
+
+    const row = document.createElement("tr");
+    if (p.isUser) row.className = "is-user";
+    row.innerHTML = `
+      <td>#${rank}</td>
+      <td>${p.name}</td>
+      <td>${rank <= 64 ? '<span class="tag tag-tourcard">Tour Card</span>' : '<span class="tag tag-danger">Cut Line</span>'}</td>
+      <td>£${p.earnings.toLocaleString()}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("player-badge").innerText = `Rank: #${userRank} | Bank: £${gameState.bankBalance.toLocaleString()}`;
+  document.getElementById("career-avg-disp").innerText = getRollingAvg().toFixed(1);
+}
+
+function advanceCalendar() {
+  gameState.eventIndex++;
+  gameState.signedSponsors.forEach(sId => {
+    const sp = SPONSORS.find(s => s.id === sId);
+    if (sp) gameState.bankBalance += sp.weekly;
+  });
+
+  if (gameState.eventIndex >= TOURNAMENTS.length) {
+    gameState.eventIndex = 0;
+    gameState.season++;
+    alert(`SEASON COMPLETED! Welcome to Season ${gameState.season}. Prior 2-year prize money is now expiring.`);
+  }
+
+  renderCalendar();
+  saveGame();
+}
+
+function renderCalendar() {
+  const container = document.getElementById("calendar-list");
+  container.innerHTML = "";
+  TOURNAMENTS.forEach((t, idx) => {
+    const isCurrent = idx === gameState.eventIndex;
+    const isPast = idx < gameState.eventIndex;
+
+    const item = document.createElement("div");
+    item.className = "card";
+    if (isCurrent) item.style.borderColor = "var(--accent)";
+    item.style.display = "flex";
+    item.style.justifyContent = "space-between";
+    item.style.alignItems = "center";
+
+    item.innerHTML = `
+      <div>
+        <div style="font-weight: 700; color: ${isCurrent ? 'var(--accent)' : '#fff'}; font-size: 0.9rem;">${t.name}</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Tier ${t.tier} • Best of ${t.legs} legs • Fund: £${t.prize.toLocaleString()}</div>
+      </div>
+      <div>
+        ${isCurrent ? `<button class="btn-action" style="padding: 6px 12px; font-size: 0.8rem;" onclick="startMatch(TOURNAMENTS[${idx}])">Play</button>` : 
+          `<span style="font-size: 0.75rem; color: var(--text-muted);">${isPast ? 'Done' : 'Locked'}</span>`}
+      </div>
+    `;
+    container.appendChild(item);
+  });
+
+  document.getElementById("season-num").innerText = gameState.season;
+  document.getElementById("event-num").innerText = gameState.eventIndex + 1;
+}
+
+function renderSponsors() {
+  const container = document.getElementById("sponsors-list");
+  container.innerHTML = "";
+  const rank = parseInt(document.getElementById("player-badge").innerText.match(/#(\d+)/)?.[1] || 128);
+
+  SPONSORS.forEach(sp => {
+    const signed = gameState.signedSponsors.includes(sp.id);
+    const eligible = rank <= sp.reqRank;
+
+    const div = document.createElement("div");
+    div.className = `sponsor-card ${signed ? 'signed' : ''}`;
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <span style="font-weight:700; color:var(--accent); font-size:0.95rem;">${sp.name}</span>
+        <span style="font-size:0.7rem; color:var(--text-muted);">Tier ${sp.tier}</span>
+      </div>
+      <div style="font-size:0.75rem; margin-bottom: 6px; color:#c9d1d9;">
+        • Retainer: <strong>£${sp.weekly}/event</strong> | 180s: <strong>£${sp.bonus180}</strong> | Title: <strong>£${sp.titleBonus.toLocaleString()}</strong>
+      </div>
+      <button class="btn-key" style="width:100%; font-size:0.8rem; padding:8px 0; ${signed ? 'background:#238636;' : ''}" 
+        ${signed || !eligible ? 'disabled' : ''} onclick="signSponsor('${sp.id}')">
+        ${signed ? 'Active Contract' : (eligible ? 'Sign Deal' : `Unlocks at Rank #${sp.reqRank}`)}
+      </button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function signSponsor(id) {
+  gameState.signedSponsors.push(id);
+  renderSponsors();
+  saveGame();
+}
+
+function switchTab(id) {
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  document.querySelectorAll(".nav-tabs button").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  const btn = Array.from(document.querySelectorAll(".nav-tabs button")).find(b => b.getAttribute("onclick").includes(id));
+  if (btn) btn.classList.add("active");
+}
+
+// Boot Engine
+if (!loadGame()) {
+  initBots();
+}
+updateOOM();
+renderCalendar();
+renderSponsors();
+</script>
+</body>
+</html>
