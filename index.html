@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Oche Master: PDC Career Tour</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#010409" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --accent: #e5a93c;
+      --accent-hover: #f3be5d;
+      --danger: #da3633;
+      --success: #238636;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 50px; user-select: none; }
+    
+    header { background: #010409; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    header h1 { font-size: 1.1rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; font-weight: 800; cursor: pointer; }
+    .status-badge { background: #21262d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--border); color: #c9d1d9; font-weight: 600; }
+
+    .nav-tabs { display: flex; background: #090d13; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .nav-tabs button { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px 6px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.75rem; white-space: nowrap; text-transform: uppercase; }
+    .nav-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .container { max-width: 600px; margin: 12px auto; padding: 0 12px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+    h2 { font-size: 1.1rem; margin-bottom: 8px; color: var(--accent); }
+
+    /* Dashboard Hub */
+    .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .hero-box { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+    .hero-box-val { font-size: 1.6rem; font-weight: 800; color: #fff; margin: 2px 0; }
+    .hero-box-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+    /* Match Screen */
+    .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 12px; }
+    .score-box { background: #0d1117; padding: 12px; border-radius: 6px; border: 2px solid var(--border); position: relative; }
+    .score-box.active-turn { border-color: var(--accent); }
+    .score-box.active-turn::after { content: "THROWING"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-size: 0.6rem; font-weight: 900; padding: 1px 6px; border-radius: 4px; }
+    .score-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+    .big-score { font-size: 3rem; font-weight: 900; line-height: 1.1; margin: 4px 0; }
+    .legs-sets { font-size: 0.8rem; color: var(--text-muted); }
+    .sub-stat { font-size: 0.7rem; color: #58a6ff; margin-top: 4px; }
+
+    /* Fast Manual Input Numpad */
+    .input-display { background: #010409; border: 2px solid var(--border); border-radius: 6px; padding: 10px; font-size: 1.8rem; font-weight: 900; text-align: center; color: var(--accent); margin-bottom: 8px; min-height: 52px; display: flex; align-items: center; justify-content: center; }
+    
+    .quick-preset-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
+    .preset-btn { background: #21262d; border: 1px solid var(--border); color: #c9d1d9; padding: 8px 0; border-radius: 4px; font-weight: 700; font-size: 0.85rem; text-align: center; cursor: pointer; }
+    .preset-btn:active { background: #30363d; }
+
+    .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+    .pad-btn { background: #161b22; border: 1px solid var(--border); color: #fff; padding: 14px 0; border-radius: 6px; font-size: 1.3rem; font-weight: 700; text-align: center; cursor: pointer; }
+    .pad-btn:active { background: #388bfd; }
+
+    .btn-action { background: var(--success); border: 1px solid #2ea043; color: white; padding: 14px; font-size: 1rem; font-weight: 800; border-radius: 6px; cursor: pointer; text-align: center; width: 100%; }
+    .btn-action:active { opacity: 0.8; }
+
+    /* Tables & Stat Cards */
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; }
+    tr.is-user { background: rgba(229, 169, 60, 0.15); font-weight: bold; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+    .tag-tourcard { background: #1f6feb; color: white; }
+    .tag-danger { background: var(--danger); color: white; }
+
+    .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-val { font-weight: 700; color: #fff; }
+
+    .sponsor-card { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+    .sponsor-card.signed { border-color: var(--success); }
+
+    /* Modal */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .modal-card { background: #161b22; border: 2px solid var(--accent); border-radius: 8px; padding: 20px; max-width: 450px; width: 100%; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="switchTab('tab-home')">Oche Master</h1>
+  <div class="status-badge" id="player-badge">Rank: #128 | Bank: £150</div>
+</header>
+
+<div class="nav-tabs">
+  <button class="active" id="btn-home" onclick="switchTab('tab-home')">Hub</button>
+  <button id="btn-match" onclick="switchTab('tab-match')">Matchplay</button>
+  <button id="btn-calendar" onclick="switchTab('tab-calendar')">Tour</button>
+  <button id="btn-stats" onclick="switchTab('tab-stats')">Stats</button>
+  <button id="btn-oom" onclick="switchTab('tab-oom')">OOM</button>
+  <button id="btn-sponsors" onclick="switchTab('tab-sponsors')">Sponsors</button>
+</div>
+
+<div class="container">
+
+  <!-- 1. MAIN MENU / HUB TAB -->
+  <div id="tab-home" class="tab-content active">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2>Career Hub</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Season <span id="hub-season">1</span> Circuit</div>
+        </div>
+        <span class="tag tag-danger" id="hub-tourcard-tag">No Tour Card</span>
+      </div>
+
+      <div class="hero-stat-grid">
+        <div class="hero-box">
+          <div class="hero-box-lbl">Rolling 3-Dart Avg</div>
+          <div class="hero-box-val" id="hub-avg-disp" style="color:var(--accent);">64.0</div>
+        </div>
+        <div class="hero-box">
+          <div class="hero-box-lbl">PDC World Rank</div>
+          <div class="hero-box-val" id="hub-rank-disp">#128</div>
+        </div>
+        <div class="hero-box">
+          <div class="hero-box-lbl">Rolling 2-Yr Prize</div>
+          <div class="hero-box-val" id="hub-prize-disp" style="font-size:1.2rem; color:#58a6ff;">£0</div>
+        </div>
+        <div class="hero-box">
+          <div class="hero-box-lbl">Highest Outshot</div>
+          <div class="hero-box-val" id="hub-highout-disp" style="font-size:1.2rem; color:#2ea043;">0</div>
+        </div>
+      </div>
+
+      <button class="btn-action" style="margin-bottom:8px;" onclick="resumeNextEvent()">Step to Oche (Next Event)</button>
+      <button class="pad-btn" style="width:100%; font-size:0.9rem; padding:10px;" onclick="switchTab('tab-calendar')">View Full Tour Schedule</button>
+    </div>
+  </div>
+
+  <!-- 2. MATCHPLAY TAB (MANUAL TOTAL ENTRY) -->
+  <div id="tab-match" class="tab-content">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h2 id="match-header" style="margin: 0; font-size: 1rem;">Anchor & Crown Superleague</h2>
+        <span id="match-format" style="font-size: 0.75rem; color: var(--text-muted);">First to 3</span>
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-box active-turn" id="user-score-box">
+          <div class="score-title">You</div>
+          <div class="big-score" id="user-rem">501</div>
+          <div class="legs-sets">Legs: <span id="user-legs">0</span></div>
+          <div class="sub-stat">Match Avg: <span id="user-match-avg">0.0</span></div>
+        </div>
+        <div class="score-box" id="bot-score-box">
+          <div class="score-title" id="bot-name-label">Bot</div>
+          <div class="big-score" id="bot-rem">501</div>
+          <div class="legs-sets">Legs: <span id="bot-legs">0</span></div>
+          <div class="sub-stat">Match Avg: <span id="bot-match-avg">0.0</span></div>
+        </div>
+      </div>
+
+      <!-- Turn Score Entry Display -->
+      <div class="input-display" id="manual-input-box">_</div>
+
+      <!-- Quick Preset Scores -->
+      <div class="quick-preset-row">
+        <div class="preset-btn" onclick="setScorePreset(26)">26</div>
+        <div class="preset-btn" onclick="setScorePreset(41)">41</div>
+        <div class="preset-btn" onclick="setScorePreset(45)">45</div>
+        <div class="preset-btn" onclick="setScorePreset(60)">60</div>
+        <div class="preset-btn" onclick="setScorePreset(81)">81</div>
+        <div class="preset-btn" onclick="setScorePreset(85)">85</div>
+        <div class="preset-btn" onclick="setScorePreset(100)">100</div>
+        <div class="preset-btn" onclick="setScorePreset(140)">140</div>
+        <div class="preset-btn" onclick="setScorePreset(180)">180</div>
+        <div class="preset-btn" style="background:#3b1f23; color:#f85149;" onclick="setScorePreset('BUST')">BUST</div>
+      </div>
+
+      <!-- Fast Tactile Numpad -->
+      <div class="numpad-grid">
+        <div class="pad-btn" onclick="padDigit('1')">1</div>
+        <div class="pad-btn" onclick="padDigit('2')">2</div>
+        <div class="pad-btn" onclick="padDigit('3')">3</div>
+        <div class="pad-btn" onclick="padDigit('4')">4</div>
+        <div class="pad-btn" onclick="padDigit('5')">5</div>
+        <div class="pad-btn" onclick="padDigit('6')">6</div>
+        <div class="pad-btn" onclick="padDigit('7')">7</div>
+        <div class="pad-btn" onclick="padDigit('8')">8</div>
+        <div class="pad-btn" onclick="padDigit('9')">9</div>
+        <div class="pad-btn" style="background:#30363d;" onclick="padClear()">C</div>
+        <div class="pad-btn" onclick="padDigit('0')">0</div>
+        <div class="pad-btn" style="background:#30363d;" onclick="padBackspace()">⌫</div>
+      </div>
+
+      <button class="btn-action" onclick="submitManualVisit()">Confirm Visit</button>
+    </div>
+  </div>
+
+  <!-- 3. CAREER STATS TAB -->
+  <div id="tab-stats" class="tab-content">
+    <div class="card">
+      <h2>Lifetime Career Stats</h2>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Career 3-Dart Average</span>
+        <span class="stat-val" id="st-career-avg">0.0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Rolling 10-Match Form</span>
+        <span class="stat-val" id="st-rolling-avg">0.0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Checkout Accuracy</span>
+        <span class="stat-val" id="st-checkout-pct">0.0%</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Highest Checkout</span>
+        <span class="stat-val" id="st-highest-checkout">0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">180s Thrown</span>
+        <span class="stat-val" id="st-180s">0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">170+ Visits</span>
+        <span class="stat-val" id="st-170s">0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">140+ Visits</span>
+        <span class="stat-val" id="st-140s">0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Total 100+ Scores</span>
+        <span class="stat-val" id="st-100s">0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Matches (Won / Played)</span>
+        <span class="stat-val" id="st-matches">0 / 0</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text-muted);">Legs Record</span>
+        <span class="stat-val" id="st-legs">0 - 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. TOUR CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content">
+    <div class="card">
+      <h2>PDC Tour Circuit</h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+        Season <span id="cal-season">1</span>. Defend prize money over 24 months to retain your Tour Card.
+      </p>
+      <div id="calendar-list"></div>
+    </div>
+  </div>
+
+  <!-- 5. ORDER OF MERIT TAB -->
+  <div id="tab-oom" class="tab-content">
+    <div class="card">
+      <h2>2-Year Rolling Order of Merit</h2>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Top 64 players secure an automatic PDC Tour Card.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Status</th>
+            <th>Rolling Fund</th>
+          </tr>
+        </thead>
+        <tbody id="oom-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 6. SPONSORS TAB -->
+  <div id="tab-sponsors" class="tab-content">
+    <div class="card">
+      <h2>Sponsorship Portfolio</h2>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">Weekly retainers and bonuses scale based on tour rank tier.</p>
+      <div id="sponsors-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DOUBLE ATTEMPT MODAL (FOR ACCURATE CHECKOUT STATS) -->
+<div class="modal-backdrop" id="checkout-modal">
+  <div class="modal-card">
+    <h2 style="color:var(--accent); font-size:1.1rem; margin-bottom: 8px;">Leg Outshot!</h2>
+    <p style="font-size:0.85rem; line-height:1.4; margin-bottom: 12px; color:#c9d1d9;">How many darts did you throw at a double in this checkout visit?</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-action" onclick="confirmLegOut(1)">1 Dart</button>
+      <button class="btn-action" onclick="confirmLegOut(2)">2 Darts</button>
+      <button class="btn-action" onclick="confirmLegOut(3)">3 Darts</button>
+    </div>
+  </div>
+</div>
+
+<!-- WILDCARD MODAL -->
+<div class="modal-backdrop" id="wildcard-modal">
+  <div class="modal-card">
+    <h2 id="modal-title" style="color:var(--accent); font-size:1.2rem; margin-bottom: 8px;">Reserve Wildcard Invite!</h2>
+    <p id="modal-text" style="font-size:0.85rem; line-height:1.4; margin-bottom: 16px; color:#c9d1d9;">You have earned an invitation to step up to a higher tier event.</p>
+    <button class="btn-action" style="width: 100%; margin-bottom: 8px;" onclick="acceptWildcard()">Accept & Play</button>
+    <button class="pad-btn" style="width: 100%; background: #30363d;" onclick="closeWildcard()">Decline</button>
+  </div>
+</div>
+
+<script>
+// -------------------------------------------------------------
+// 1. DATA AND STATE PERSISTENCE
+// -------------------------------------------------------------
+const STORAGE_KEY = "oche_master_saved_game_v2";
+
+const TOURNAMENTS = [
+  { id: 't1', name: 'Anchor & Crown Superleague', tier: 1, legs: 3, prize: 350 },
+  { id: 't2', name: 'Black Dog District Open', tier: 1, legs: 3, prize: 500 },
+  { id: 't3', name: 'Wiltshire County Trophy', tier: 2, legs: 4, prize: 1800 },
+  { id: 't4', name: 'West of England Masters', tier: 2, legs: 4, prize: 3000 },
+  { id: 't5', name: 'PDC Q-School Stage 1', tier: 3, legs: 5, prize: 4500 },
+  { id: 't6', name: 'PDC Challenge Tour', tier: 3, legs: 5, prize: 8000 },
+  { id: 't7', name: 'Players Championship (Floor)', tier: 4, legs: 6, prize: 15000 },
+  { id: 't8', name: 'European Tour Stage', tier: 4, legs: 6, prize: 35000 },
+  { id: 't9', name: 'PDC World Matchplay', tier: 5, legs: 8, prize: 150000 },
+  { id: 't10', name: 'PDC World Championship (Ally Pally)', tier: 5, legs: 9, prize: 500000 },
+];
+
+const SPONSORS = [
+  { id: 'sp1', name: 'The Village Chippy', tier: 1, weekly: 25, bonus180: 5, titleBonus: 100, reqRank: 128 },
+  { id: 'sp2', name: 'Local Tyres & MOT', tier: 1, weekly: 60, bonus180: 10, titleBonus: 250, reqRank: 115 },
+  { id: 'sp3', name: 'Avon Valley Transport', tier: 2, weekly: 180, bonus180: 30, titleBonus: 800, reqRank: 90 },
+  { id: 'sp4', name: 'Apex Tungsten Barrels', tier: 3, weekly: 500, bonus180: 80, titleBonus: 2500, reqRank: 64 },
+  { id: 'sp5', name: 'Target Aero-Grip Flights', tier: 4, weekly: 1500, bonus180: 250, titleBonus: 10000, reqRank: 32 },
+  { id: 'sp6', name: 'Red Bull Stage Energy', tier: 5, weekly: 5000, bonus180: 750, titleBonus: 40000, reqRank: 16 }
+];
+
+let gameState = {
+  bankBalance: 150,
+  season: 1,
+  eventIndex: 0,
+  recentAvgs: [62.4, 65.1, 63.8, 66.2],
+  signedSponsors: ['sp1'],
+  earningsLog: [],
+  // Deep Career Stats
+  stats: {
+    totalPoints: 0,
+    totalDarts: 0,
+    matchesPlayed: 0,
+    matchesWon: 0,
+    legsWon: 0,
+    legsLost: 0,
+    c180: 0,
+    c170plus: 0,
+    c140plus: 0,
+    c100plus: 0,
+    highestCheckout: 0,
+    doublesHit: 0,
+    doubleAttempts: 0
+  }
+};
+
+let botRoster = [];
+let pendingWildcard = null;
+let currentInputString = "";
+
+function saveGame() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ gameState, botRoster }));
+  } catch (e) { console.error("Could not save:", e); }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.gameState) gameState = data.gameState;
+    if (data.botRoster) botRoster = data.botRoster;
+    return true;
+  } catch (e) { return false; }
+}
+
+function initBots() {
+  const stars = ["Luke The Nuke", "Mighty Mike", "The Iceman", "Snakebite", "Bully Boy", "Voltage", "The Asp", "The Ferret", "Chizzy", "Rockstar"];
+  botRoster = [];
+  for (let i = 1; i <= 128; i++) {
+    botRoster.push({
+      id: i,
+      name: i <= stars.length ? stars[i - 1] : `PDC Pro #${i}`,
+      earnings: Math.round(480000 / (1 + (i * 0.14)))
+    });
+  }
+}
+
+// -------------------------------------------------------------
+// 2. REFEREE AUDIO (NATIVE SPEECH SYNTHESIS)
+// -------------------------------------------------------------
+function callReferee(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB';
+  u.pitch = 0.9;
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
+
+// -------------------------------------------------------------
+// 3. DYNAMIC BOT SIMULATION
+// -------------------------------------------------------------
+function getRollingAvg() {
+  if (gameState.recentAvgs.length === 0) return 64.0;
+  return gameState.recentAvgs.reduce((a, b) => a + b, 0) / gameState.recentAvgs.length;
+}
+
+function getBotSigma(tier) {
+  const userAvg = getRollingAvg();
+  const offsets = { 1: -9, 2: -3, 3: 1, 4: 5, 5: 9 };
+  const targetAvg = userAvg + (offsets[tier] || 0) + ((Math.random() * 4) - 2);
+  const sigma = 45 - (targetAvg - 45) * 0.55;
+  return Math.max(8, Math.min(36, sigma));
+}
+
+function simBotDart(targetScore, targetMult, sigma) {
+  const u1 = Math.random(), u2 = Math.random();
+  const dev = Math.abs(Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2) * sigma);
+  if (dev <= 4.5) return { score: targetScore, mult: targetMult };
+  if (dev <= 16.0) return { score: targetScore, mult: 1 };
+  return { score: Math.max(1, Math.min(20, targetScore + (Math.random() > 0.5 ? 1 : -1))), mult: 1 };
+}
+
+// -------------------------------------------------------------
+// 4. MANUAL TOTAL SCORING PAD
+// -------------------------------------------------------------
+function padDigit(digit) {
+  if (currentInputString.length >= 3) return;
+  currentInputString += digit;
+  updateInputDisplay();
+}
+
+function padClear() {
+  currentInputString = "";
+  updateInputDisplay();
+}
+
+function padBackspace() {
+  currentInputString = currentInputString.slice(0, -1);
+  updateInputDisplay();
+}
+
+function setScorePreset(val) {
+  if (val === 'BUST') {
+    currentInputString = "BUST";
+  } else {
+    currentInputString = val.toString();
+  }
+  updateInputDisplay();
+}
+
+function updateInputDisplay() {
+  const el = document.getElementById("manual-input-box");
+  el.innerText = currentInputString === "" ? "_" : currentInputString;
+}
+
+// -------------------------------------------------------------
+// 5. MATCH ENGINE & CHECKOUT PROMPT
+// -------------------------------------------------------------
+let matchState = {
+  tourn: TOURNAMENTS[0],
+  legsToWin: 3,
+  userLegs: 0,
+  botLegs: 0,
+  userScore: 501,
+  botScore: 501,
+  turn: 'user',
+  userDarts: 0,
+  userPoints: 0,
+  botDarts: 0,
+  botPoints: 0
+};
+
+let pendingLegCheckoutScore = 0;
+
+function startMatch(tourn) {
+  matchState.tourn = tourn;
+  matchState.legsToWin = tourn.legs;
+  matchState.userLegs = 0;
+  matchState.botLegs = 0;
+  matchState.userScore = 501;
+  matchState.botScore = 501;
+  matchState.userDarts = 0;
+  matchState.userPoints = 0;
+  matchState.botDarts = 0;
+  matchState.botPoints = 0;
+  matchState.turn = 'user';
+  currentInputString = "";
+  updateInputDisplay();
+
+  document.getElementById("match-header").innerText = tourn.name;
+  document.getElementById("match-format").innerText = `First to ${tourn.legs} (Tier ${tourn.tier})`;
+  document.getElementById("bot-name-label").innerText = `Tier ${tourn.tier} Opponent`;
+  switchTab('tab-match');
+  updateMatchUI();
+  callReferee("Game on!");
+}
+
+function submitManualVisit() {
+  if (currentInputString === "") return;
+
+  if (currentInputString === "BUST") {
+    currentInputString = "";
+    updateInputDisplay();
+    handleBust();
+    return;
+  }
+
+  const score = parseInt(currentInputString, 10);
+  if (isNaN(score) || score < 0 || score > 180) {
+    alert("Please enter a valid visit score between 0 and 180.");
+    return;
+  }
+
+  currentInputString = "";
+  updateInputDisplay();
+
+  const rem = matchState.userScore - score;
+
+  // Track double attempts if player was already in checkout territory (<= 50)
+  if (matchState.userScore <= 50 && rem > 0) {
+    gameState.stats.doubleAttempts += 1;
+  }
+
+  // Bust logic
+  if (rem < 0 || rem === 1) {
+    handleBust();
+    return;
+  }
+
+  // Leg Won check
+  if (rem === 0) {
+    if (score > 170 || [169, 168, 166, 165, 163, 162, 159].includes(score)) {
+      alert("Invalid checkout outshot value.");
+      return;
+    }
+    pendingLegCheckoutScore = score;
+    matchState.userDarts += 3;
+    matchState.userPoints += score;
+    logVisitMilestones(score);
+
+    // Prompt for doubles thrown to record checkout %
+    document.getElementById("checkout-modal").style.display = "flex";
+    return;
+  }
+
+  // Regular successful visit
+  matchState.userScore = rem;
+  matchState.userDarts += 3;
+  matchState.userPoints += score;
+  logVisitMilestones(score);
+
+  if (score === 180) {
+    callReferee("One Hundred and Eighty!");
+    awardBonus('180');
+  } else if (score === 0) {
+    callReferee("No score.");
+  } else {
+    callReferee(`${score}`);
+  }
+
+  if (rem <= 40 && rem % 2 === 0) {
+    setTimeout(() => callReferee(`You require Double ${rem / 2}`), 1000);
+  }
+
+  matchState.turn = 'bot';
+  updateMatchUI();
+  setTimeout(executeBotTurn, 900);
+}
+
+function handleBust() {
+  matchState.userDarts += 3;
+  gameState.stats.totalDarts += 3;
+  callReferee("Bust!");
+  matchState.turn = 'bot';
+  updateMatchUI();
+  setTimeout(executeBotTurn, 800);
+}
+
+function logVisitMilestones(score) {
+  gameState.stats.totalDarts += 3;
+  gameState.stats.totalPoints += score;
+  if (score === 180) gameState.stats.c180++;
+  else if (score >= 170) gameState.stats.c170plus++;
+  else if (score >= 140) gameState.stats.c140plus++;
+  else if (score >= 100) gameState.stats.c100plus++;
+}
+
+function confirmLegOut(dartsAtDouble) {
+  document.getElementById("checkout-modal").style.display = "none";
+  gameState.stats.doublesHit++;
+  gameState.stats.doubleAttempts += dartsAtDouble;
+  if (pendingLegCheckoutScore > gameState.stats.highestCheckout) {
+    gameState.stats.highestCheckout = pendingLegCheckoutScore;
+  }
+
+  matchState.userLegs++;
+  gameState.stats.legsWon++;
+  callReferee("Game shot, and the leg!");
+
+  if (matchState.userLegs >= matchState.legsToWin) {
+    concludeMatch('user');
+  } else {
+    matchState.userScore = 501;
+    matchState.botScore = 501;
+    matchState.turn = 'user';
+    updateMatchUI();
+  }
+}
+
+function executeBotTurn() {
+  const sigma = getBotSigma(matchState.tourn.tier);
+  let rem = matchState.botScore;
+
+  for (let i = 0; i < 3; i++) {
+    matchState.botDarts++;
+    let target = 20, mult = 3;
+    if (rem <= 40 && rem % 2 === 0) {
+      target = rem / 2;
+      mult = 2;
+    } else if (rem === 50) {
+      target = 25;
+      mult = 2;
+    }
+
+    const hit = simBotDart(target, mult, sigma);
+    const pts = hit.score * hit.mult;
+
+    if (rem - pts === 0 && hit.mult === 2) {
+      rem = 0;
+      break;
+    } else if (rem - pts <= 1) {
+      break;
+    } else {
+      rem -= pts;
+    }
+  }
+
+  matchState.botPoints += (matchState.botScore - rem);
+  matchState.botScore = rem;
+
+  if (rem === 0) {
+    matchState.botLegs++;
+    gameState.stats.legsLost++;
+    callReferee("Game shot, to your opponent.");
+    if (matchState.botLegs >= matchState.legsToWin) {
+      concludeMatch('bot');
+      return;
+    }
+    matchState.userScore = 501;
+    matchState.botScore = 501;
+  }
+
+  matchState.turn = 'user';
+  updateMatchUI();
+}
+
+function concludeMatch(winner) {
+  gameState.stats.matchesPlayed++;
+  const matchAvg = matchState.userDarts > 0 ? ((matchState.userPoints / matchState.userDarts) * 3).toFixed(1) : 63.0;
+  
+  gameState.recentAvgs.push(parseFloat(matchAvg));
+  if (gameState.recentAvgs.length > 10) gameState.recentAvgs.shift();
+
+  if (winner === 'user') {
+    gameState.stats.matchesWon++;
+    const prize = matchState.tourn.prize;
+    gameState.bankBalance += prize;
+    awardBonus('title');
+    callReferee("Game, shot, and the match!");
+
+    gameState.earningsLog.push({
+      prize,
+      seasonEarned: gameState.season,
+      expiresSeason: gameState.season + 2
+    });
+
+    alert(`VICTORY! Winner of ${matchState.tourn.name}!\nPrize Won: £${prize.toLocaleString()}\nMatch Avg: ${matchAvg}`);
+    checkWildcard(matchState.tourn.tier);
+  } else {
+    alert(`Match defeated in deciding leg.\nMatch Average: ${matchAvg}`);
+  }
+
+  advanceCalendar();
+  saveGame();
+  renderAllViews();
+  switchTab('tab-home');
+}
+
+function awardBonus(type) {
+  gameState.signedSponsors.forEach(sId => {
+    const sp = SPONSORS.find(s => s.id === sId);
+    if (!sp) return;
+    if (type === '180') gameState.bankBalance += sp.bonus180;
+    if (type === 'title') gameState.bankBalance += sp.titleBonus;
+  });
+}
+
+function updateMatchUI() {
+  document.getElementById("user-rem").innerText = matchState.userScore;
+  document.getElementById("bot-rem").innerText = matchState.botScore;
+  document.getElementById("user-legs").innerText = matchState.userLegs;
+  document.getElementById("bot-legs").innerText = matchState.botLegs;
+
+  const uAvg = matchState.userDarts > 0 ? ((matchState.userPoints / matchState.userDarts) * 3).toFixed(1) : "0.0";
+  const bAvg = matchState.botDarts > 0 ? ((matchState.botPoints / matchState.botDarts) * 3).toFixed(1) : "0.0";
+  document.getElementById("user-match-avg").innerText = uAvg;
+  document.getElementById("bot-match-avg").innerText = bAvg;
+
+  document.getElementById("user-score-box").classList.toggle("active-turn", matchState.turn === 'user');
+  document.getElementById("bot-score-box").classList.toggle("active-turn", matchState.turn === 'bot');
+}
+
+// -------------------------------------------------------------
+// 6. WILDCARDS & STEPPING STONES
+// -------------------------------------------------------------
+function checkWildcard(tierWon) {
+  if (tierWon >= 5) return;
+  const nextTier = tierWon + 1;
+  const higherEvent = TOURNAMENTS.find(t => t.tier === nextTier);
+
+  if (higherEvent) {
+    pendingWildcard = higherEvent;
+    document.getElementById("modal-title").innerText = `Tier ${nextTier} Reserve Call-Up!`;
+    document.getElementById("modal-text").innerText = `Following your victory in Tier ${tierWon}, a withdrawal grants you a wild-card invite to the ${higherEvent.name}!`;
+    document.getElementById("wildcard-modal").style.display = "flex";
+  }
+}
+
+function acceptWildcard() {
+  const ev = pendingWildcard;
+  closeWildcard();
+  if (ev) startMatch(ev);
+}
+
+function closeWildcard() {
+  pendingWildcard = null;
+  document.getElementById("wildcard-modal").style.display = "none";
+}
+
+// -------------------------------------------------------------
+// 7. CAREER STATS & RENDERING
+// -------------------------------------------------------------
+function getRollingEarnings() {
+  gameState.earningsLog = gameState.earningsLog.filter(e => e.expiresSeason > gameState.season);
+  return gameState.earningsLog.reduce((acc, i) => acc + i.prize, 0);
+}
+
+function renderAllViews() {
+  // Update Hub & Badge
+  const userEarnings = getRollingEarnings();
+  const list = [...botRoster.filter(b => !b.isUser), { id: 9999, name: "Jordan Martin (You)", earnings: userEarnings, isUser: true }];
+  list.sort((a, b) => b.earnings - a.earnings);
+
+  let userRank = 128;
+  list.forEach((p, idx) => { if (p.isUser) userRank = idx + 1; });
+
+  const hasTourCard = userRank <= 64;
+  document.getElementById("player-badge").innerText = `Rank: #${userRank} | Bank: £${gameState.bankBalance.toLocaleString()}`;
+  document.getElementById("hub-season").innerText = gameState.season;
+  document.getElementById("hub-avg-disp").innerText = getRollingAvg().toFixed(1);
+  document.getElementById("hub-rank-disp").innerText = `#${userRank}`;
+  document.getElementById("hub-prize-disp").innerText = `£${userEarnings.toLocaleString()}`;
+  document.getElementById("hub-highout-disp").innerText = gameState.stats.highestCheckout;
+
+  const cardTag = document.getElementById("hub-tourcard-tag");
+  cardTag.className = hasTourCard ? "tag tag-tourcard" : "tag tag-danger";
+  cardTag.innerText = hasTourCard ? "Tour Card Held" : "No Tour Card";
+
+  // Career Stats Screen
+  const lifetimeAvg = gameState.stats.totalDarts > 0 
+    ? ((gameState.stats.totalPoints / gameState.stats.totalDarts) * 3).toFixed(1) 
+    : getRollingAvg().toFixed(1);
+
+  const coPct = gameState.stats.doubleAttempts > 0 
+    ? ((gameState.stats.doublesHit / gameState.stats.doubleAttempts) * 100).toFixed(1) 
+    : "0.0";
+
+  document.getElementById("st-career-avg").innerText = lifetimeAvg;
+  document.getElementById("st-rolling-avg").innerText = getRollingAvg().toFixed(1);
+  document.getElementById("st-checkout-pct").innerText = `${coPct}% (${gameState.stats.doublesHit}/${gameState.stats.doubleAttempts})`;
+  document.getElementById("st-highest-checkout").innerText = gameState.stats.highestCheckout;
+  document.getElementById("st-180s").innerText = gameState.stats.c180;
+  document.getElementById("st-170s").innerText = gameState.stats.c170plus;
+  document.getElementById("st-140s").innerText = gameState.stats.c140plus;
+  document.getElementById("st-100s").innerText = gameState.stats.c100plus;
+  document.getElementById("st-matches").innerText = `${gameState.stats.matchesWon} / ${gameState.stats.matchesPlayed}`;
+  document.getElementById("st-legs").innerText = `${gameState.stats.legsWon} - ${gameState.stats.legsLost}`;
+
+  // OOM Table
+  const tbody = document.getElementById("oom-body");
+  tbody.innerHTML = "";
+  list.slice(0, 68).forEach((p, idx) => {
+    const rank = idx + 1;
+    const row = document.createElement("tr");
+    if (p.isUser) row.className = "is-user";
+    row.innerHTML = `
+      <td>#${rank}</td>
+      <td>${p.name}</td>
+      <td>${rank <= 64 ? '<span class="tag tag-tourcard">Tour Card</span>' : '<span class="tag tag-danger">Cut Line</span>'}</td>
+      <td>£${p.earnings.toLocaleString()}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Calendar
+  const calContainer = document.getElementById("calendar-list");
+  calContainer.innerHTML = "";
+  document.getElementById("cal-season").innerText = gameState.season;
+
+  TOURNAMENTS.forEach((t, idx) => {
+    const isCurrent = idx === gameState.eventIndex;
+    const isPast = idx < gameState.eventIndex;
+    const item = document.createElement("div");
+    item.className = "card";
+    if (isCurrent) item.style.borderColor = "var(--accent)";
+    item.style.display = "flex";
+    item.style.justifyContent = "space-between";
+    item.style.alignItems = "center";
+    item.innerHTML = `
+      <div>
+        <div style="font-weight: 700; color: ${isCurrent ? 'var(--accent)' : '#fff'}; font-size: 0.9rem;">${t.name}</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Tier ${t.tier} • Best of ${t.legs} legs • Fund: £${t.prize.toLocaleString()}</div>
+      </div>
+      <div>
+        ${isCurrent ? `<button class="btn-action" style="padding: 6px 12px; font-size: 0.8rem;" onclick="startMatch(TOURNAMENTS[${idx}])">Play</button>` : 
+          `<span style="font-size: 0.75rem; color: var(--text-muted);">${isPast ? 'Done' : 'Locked'}</span>`}
+      </div>
+    `;
+    calContainer.appendChild(item);
+  });
+
+  // Sponsors
+  const spContainer = document.getElementById("sponsors-list");
+  spContainer.innerHTML = "";
+  SPONSORS.forEach(sp => {
+    const signed = gameState.signedSponsors.includes(sp.id);
+    const eligible = userRank <= sp.reqRank;
+    const div = document.createElement("div");
+    div.className = `sponsor-card ${signed ? 'signed' : ''}`;
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <span style="font-weight:700; color:var(--accent); font-size:0.95rem;">${sp.name}</span>
+        <span style="font-size:0.7rem; color:var(--text-muted);">Tier ${sp.tier}</span>
+      </div>
+      <div style="font-size:0.75rem; margin-bottom: 6px; color:#c9d1d9;">
+        • Retainer: <strong>£${sp.weekly}/event</strong> | 180s: <strong>£${sp.bonus180}</strong> | Title: <strong>£${sp.titleBonus.toLocaleString()}</strong>
+      </div>
+      <button class="pad-btn" style="width:100%; font-size:0.8rem; padding:8px 0; ${signed ? 'background:#238636;' : ''}" 
+        ${signed || !eligible ? 'disabled' : ''} onclick="signSponsor('${sp.id}')">
+        ${signed ? 'Active Contract' : (eligible ? 'Sign Deal' : `Unlocks at Rank #${sp.reqRank}`)}
+      </button>
+    `;
+    spContainer.appendChild(div);
+  });
+}
+
+function resumeNextEvent() {
+  const currentTourn = TOURNAMENTS[gameState.eventIndex];
+  if (currentTourn) startMatch(currentTourn);
+}
+
+function signSponsor(id) {
+  gameState.signedSponsors.push(id);
+  saveGame();
+  renderAllViews();
+}
+
+function advanceCalendar() {
+  gameState.eventIndex++;
+  gameState.signedSponsors.forEach(sId => {
+    const sp = SPONSORS.find(s => s.id === sId);
+    if (sp) gameState.bankBalance += sp.weekly;
+  });
+
+  if (gameState.eventIndex >= TOURNAMENTS.length) {
+    gameState.eventIndex = 0;
+    gameState.season++;
+    alert(`SEASON COMPLETED! Welcome to Season ${gameState.season}. 2-year-old prize money is now expiring.`);
+  }
+
+  saveGame();
+}
+
+function switchTab(id) {
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  document.querySelectorAll(".nav-tabs button").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  const tabBtnMap = {
+    'tab-home': 'btn-home',
+    'tab-match': 'btn-match',
+    'tab-calendar': 'btn-calendar',
+    'tab-stats': 'btn-stats',
+    'tab-oom': 'btn-oom',
+    'tab-sponsors': 'btn-sponsors'
+  };
+  const activeBtn = document.getElementById(tabBtnMap[id]);
+  if (activeBtn) activeBtn.classList.add("active");
+}
+
+// Boot Engine
+if (!loadGame()) {
+  initBots();
+}
+renderAllViews();
+</script>
+</body>
+</html>
