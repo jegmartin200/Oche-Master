@@ -1,0 +1,15 @@
+{
+  "name": "oche-master",
+  "version": "1.0.0",
+  "description": "PDC Darts Career & Score Tracker",
+  "scripts": {
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}
