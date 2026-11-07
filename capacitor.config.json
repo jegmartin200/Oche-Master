@@ -1,6 +1,6 @@
 {
   "appId": "com.jordanmartin.ochemaster",
   "appName": "Oche Master",
-  "webDir": ".",
+  "webDir": "www",
   "bundledWebRuntime": false
 }
