@@ -28,21 +28,27 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Initialize Android Project
+      - name: Prepare Web Directory
         run: |
-          npx cap add android
-          npx cap sync android
+          mkdir -p www
+          cp index.html manifest.json sw.js www/
 
-      - name: Build Debug APK
+      - name: Install Project Dependencies
+        run: |
+          npm install
+
+      - name: Add Android Platform
+        run: |
+          npx --yes @capacitor/cli add android
+          npx --yes @capacitor/cli sync android
+
+      - name: Compile Debug APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload APK File
         uses: actions/upload-artifact@v4
         with:
           name: Oche-Master-App
